@@ -60,12 +60,12 @@ export default function SystemStatusCard({ systemData, bacterialLoadData }: Syst
           <span className="text-muted-foreground">Air Changes/Hour (ACH)</span>
           <span className="font-semibold">{ach}</span>
         </div>
-        <div className="flex items-center justify-between text-sm">
+        {/* <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">UV Sterilization</span>
           <span className={`font-semibold ${uvSterilization === 'Active' ? 'text-green-600' : 'text-muted-foreground'}`}>
             {uvSterilization}
           </span>
-        </div>
+        </div> */}
 
         <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-4">
             <h4 className="font-semibold text-primary">Action to be Taken</h4>

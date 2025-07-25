@@ -3,16 +3,16 @@ import type { Hospital, RoomData } from './types';
 export const hospitals: Hospital[] = [
   {
     id: 'mercy_general',
-    name: 'Mercy General Hospital',
+    name: 'General Hospital',
     rooms: [
       { id: 'icu_101', name: 'ICU Room 101' },
+      { id: 'icu_2', name: 'ICU Room 102' },
       { id: 'or_203', name: 'Operating Room 203' },
-      { id: 'er_005', name: 'Emergency Room 5' },
     ],
   },
   {
     id: 'city_central',
-    name: 'City Central Hospital',
+    name: 'Central Hospital',
     rooms: [
       { id: 'maternity_301', name: 'Maternity Ward 301' },
       { id: 'cardiac_402', name: 'Cardiac Unit 402' },
@@ -20,7 +20,7 @@ export const hospitals: Hospital[] = [
   },
   {
     id: 'st_judes',
-    name: 'St. Jude\'s Children\'s Hospital',
+    name: 'General Hospital 2',
     rooms: [
       { id: 'pediatrics_a', name: 'Pediatrics Wing A' },
       { id: 'pediatrics_b', name: 'Pediatrics Wing B' },
@@ -49,7 +49,14 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
   const rand = (min: number, max: number, offset = 0) => 
     Math.floor(seededRandom(seed + offset) * (max - min + 1)) + min;
 
-  const currentCfu = rand(5, 1000, 1);
+  let currentCfu = rand(5, 1000, 1);
+  if (roomId === 'icu_2') {
+    currentCfu = rand(500, 1000, 1);
+    if (currentCfu < 750) {
+      currentCfu = rand(750, 1000, 1);
+    }
+  }
+
   const healthStatus = currentCfu > 750 ? 'Poor' : currentCfu > 250 ? 'Moderate' : 'Good';
 
   const generateCfuHistory = () => {
@@ -57,9 +64,13 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
     const now = new Date();
     for (let i = 11; i >= 0; i--) {
       const time = new Date(now.getTime() - i * 60 * 60 * 1000); // last 12 hours
+      let value = rand(5, 1000, 100 + i);
+      if (roomId === 'icu_2') {
+         value = rand(500, 1000, 100 + i);
+      }
       data.push({
         time: time.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
-        value: rand(5, 1000, 100 + i),
+        value,
       });
     }
     // ensure last point is current value
@@ -68,6 +79,8 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
   };
   
   const cfuHistory = generateCfuHistory();
+
+  const co2Max24h = rand(400, 900, 3);
 
   return {
     hospitalId,
@@ -80,7 +93,7 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
       },
     },
     environmentalParameters: {
-      co2: { current: rand(400, 1200, 2), max24h: rand(1201, 1500, 3), min24h: rand(350, 399, 4), unit: 'ppm', name: 'CO2' },
+      co2: { current: rand(400, co2Max24h, 2), max24h: co2Max24h, min24h: rand(350, 399, 4), unit: 'ppm', name: 'CO2' },
       pm25: { current: rand(5, 30, 5), max24h: rand(31, 50, 6), min24h: rand(1, 4, 7), unit: 'µg/m³', name: 'PM2.5' },
       pm4: { current: rand(10, 40, 8), max24h: rand(41, 60, 9), min24h: rand(2, 9, 10), unit: 'µg/m³', name: 'PM4' },
       pm10: { current: rand(15, 50, 11), max24h: rand(51, 80, 12), min24h: rand(5, 14, 13), unit: 'µg/m³', name: 'PM10' },
