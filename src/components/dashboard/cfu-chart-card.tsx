@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Activity } from 'lucide-react';
-import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { Line, Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import type { CfuDataPoint } from '@/lib/types';
 import { ChartTooltipContent, ChartContainer, type ChartConfig } from '@/components/ui/chart';
@@ -26,13 +26,13 @@ export default function CfuChartCard({ data }: CfuChartCardProps) {
             <Activity className="h-5 w-5 text-primary" />
             <CardTitle>CFU/m³ vs. Time</CardTitle>
         </div>
-        <CardDescription>Bacterial load over the last 12 hours.</CardDescription>
+        <CardDescription>Bacterial load over the last 24 hours.</CardDescription>
       </CardHeader>
       <CardContent className="pr-0">
         <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ChartContainer config={chartConfig}>
-                <LineChart
+                <AreaChart
                   data={data}
                   margin={{
                     top: 5,
@@ -48,16 +48,15 @@ export default function CfuChartCard({ data }: CfuChartCardProps) {
                     cursor={{ fill: 'hsl(var(--muted))' }}
                     content={<ChartTooltipContent indicator="dot" />}
                   />
-                  <Line
-                    type="monotone"
+                  <Area
+                    type="linear"
                     dataKey="value"
                     name="CFU/m³"
                     stroke="var(--color-value)"
+                    fill="var(--color-value)"
                     strokeWidth={2}
-                    dot={{ r: 4, fill: 'var(--color-value)' }}
-                    activeDot={{ r: 8, fill: 'var(--color-value)' }}
                   />
-                </LineChart>
+                </AreaChart>
               </ChartContainer>
             </ResponsiveContainer>
         </div>

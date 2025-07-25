@@ -62,19 +62,40 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
   const generateCfuHistory = () => {
     const data = [];
     const now = new Date();
-    for (let i = 11; i >= 0; i--) {
-      const time = new Date(now.getTime() - i * 60 * 60 * 1000); // last 12 hours
-      let value = rand(5, 1000, 100 + i);
-      if (roomId === 'icu_2') {
+    // Generate data for the last 24 hours at 5-minute intervals
+    for (let i = 24 * 12 - 1; i >= 0; i--) { // 24 hours * 12 intervals per hour (60/5)
+      const time = new Date(now.getTime() - i * 5 * 60 * 1000); // i * 5 minutes
+      const hour = time.getHours();
+      const minute = time.getMinutes();
+      let value = rand(5, 249, 100 + i); // Default to good range
+
+      // Moderate range conditions for ICU Room 101
+      if (hospitalId === 'mercy_general' && roomId === 'icu_101') {
+        if (
+          (hour >= 7 && hour < 9) || // 7am to 9am
+          (hour >= 11 && hour < 14) || // 11am to 2pm (14 is 2pm in 24h format)
+          (hour >= 16 && (hour < 19 || (hour === 19 && minute <= 30))) || // 4pm to 7:30pm
+          (hour >= 20 && (hour < 22 || (hour === 22 && minute <= 30))) // 8:30pm to 10:30pm
+        ) {
+          value = rand(250, 500, 100 + i);
+        } else if (hour >= 22 || hour < 7 ) { // After 10:30pm to before 7am, mostly good
+           value = rand(5, 249, 100 + i);
+        }
+        // Ensure some high values in ICU_2
+      } else if (roomId === 'icu_2') {
          value = rand(500, 1000, 100 + i);
       }
+       else { // Other rooms
+           value = rand(5, 1000, 100 + i);
+       }
+
       data.push({
-        time: time.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
+        time: time.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }),
         value,
       });
     }
     // ensure last point is current value
-    data[11].value = currentCfu;
+    data[data.length - 1].value = currentCfu;
     return data;
   };
   

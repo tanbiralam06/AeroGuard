@@ -53,7 +53,7 @@ export default function SystemStatusCard({ systemData, bacterialLoadData }: Syst
         <div className="flex items-center justify-between rounded-lg border p-3">
           <span className="text-sm font-medium">Overall Health</span>
           <Badge variant={healthVariantMap[overallHealth]} className={healthColorMap[overallHealth]}>
-            {overallHealth === 'Poor' ? 'High' : overallHealth.toUpperCase()}
+            {overallHealth === 'Poor' ? 'Sensitive' : overallHealth.toUpperCase()}
           </Badge>
         </div>
         <div className="flex items-center justify-between text-sm">
