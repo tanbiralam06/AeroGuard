@@ -28,36 +28,38 @@ export default function CfuChartCard({ data }: CfuChartCardProps) {
         </div>
         <CardDescription>Bacterial load over the last 12 hours.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pr-0">
         <div className="h-[300px] w-full">
-            <ChartContainer config={chartConfig}>
-              <LineChart
-                data={data}
-                margin={{
-                  top: 5,
-                  right: 20,
-                  left: -20,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
-                <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip
-                  cursor={{ fill: 'hsl(var(--muted))' }}
-                  content={<ChartTooltipContent indicator="dot" />}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  name="CFU/m³"
-                  stroke="var(--color-value)"
-                  strokeWidth={2}
-                  dot={{ r: 4, fill: 'var(--color-value)' }}
-                  activeDot={{ r: 8, fill: 'var(--color-value)' }}
-                />
-              </LineChart>
-            </ChartContainer>
+            <ResponsiveContainer width="100%" height="100%">
+              <ChartContainer config={chartConfig}>
+                <LineChart
+                  data={data}
+                  margin={{
+                    top: 5,
+                    right: 20,
+                    left: -20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
+                  <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    cursor={{ fill: 'hsl(var(--muted))' }}
+                    content={<ChartTooltipContent indicator="dot" />}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name="CFU/m³"
+                    stroke="var(--color-value)"
+                    strokeWidth={2}
+                    dot={{ r: 4, fill: 'var(--color-value)' }}
+                    activeDot={{ r: 8, fill: 'var(--color-value)' }}
+                  />
+                </LineChart>
+              </ChartContainer>
+            </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>
