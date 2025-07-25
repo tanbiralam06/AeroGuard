@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AeroGuard',
-  description: 'AeroGuard Air Quality Monitoring Dashboard',
+  title: 'Biomoneta',
+  description: 'Biomoneta Air Quality Monitoring Dashboard',
 };
 
 export default function RootLayout({
