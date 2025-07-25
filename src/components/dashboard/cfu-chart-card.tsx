@@ -36,7 +36,7 @@ export default function CfuChartCard({ data }: CfuChartCardProps) {
                 margin={{
                   top: 5,
                   right: 20,
-                  left: -10,
+                  left: 0,
                   bottom: 5,
                 }}
               >
