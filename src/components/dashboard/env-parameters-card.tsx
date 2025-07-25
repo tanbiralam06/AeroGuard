@@ -3,7 +3,6 @@
 import React from 'react';
 import { Cloud, FlaskConical, Sun, Wind } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import type { EnvironmentalParametersData, EnvParameter } from '@/lib/types';
 
 const iconMap: { [key: string]: React.ReactNode } = {
@@ -16,12 +15,12 @@ const iconMap: { [key: string]: React.ReactNode } = {
 };
 
 const ParameterRow = ({ parameter }: { parameter: EnvParameter }) => (
-  <li className="flex items-center justify-between py-3">
+  <li className="grid grid-cols-2 items-center py-3">
     <div className="flex items-center gap-3">
       {iconMap[parameter.name.toLowerCase().replace('.', '')]}
       <span className="font-medium text-sm">{parameter.name}</span>
     </div>
-    <div className="grid grid-cols-3 gap-2 w-[180px] text-right">
+    <div className="grid grid-cols-3 gap-2 text-right">
       <div className="flex flex-col items-end">
         <span className="font-semibold tabular-nums">{parameter.current}</span>
         <span className="text-xs text-muted-foreground">{parameter.unit}</span>
@@ -47,10 +46,13 @@ export default function EnvParametersCard({ data }: { data: EnvironmentalParamet
         <CardTitle>Environmental Parameters</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-3 gap-2 w-full text-right mb-2 px-3">
-            <span className="text-xs font-bold text-muted-foreground">CURRENT</span>
-            <span className="text-xs font-bold text-muted-foreground">24H MAX</span>
-            <span className="text-xs font-bold text-muted-foreground">24H MIN</span>
+        <div className="grid grid-cols-2 w-full mb-2">
+            <div/>
+            <div className="grid grid-cols-3 text-right">
+                <span className="text-xs font-bold text-muted-foreground">CURRENT</span>
+                <span className="text-xs font-bold text-muted-foreground">24H MAX</span>
+                <span className="text-xs font-bold text-muted-foreground">24H MIN</span>
+            </div>
         </div>
         <ul className="divide-y divide-border">
           {parameters.map((param) => (
