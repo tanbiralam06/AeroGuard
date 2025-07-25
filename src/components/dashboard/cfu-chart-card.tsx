@@ -5,12 +5,18 @@ import { Activity } from 'lucide-react';
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import type { CfuDataPoint } from '@/lib/types';
-import { ChartTooltipContent } from '@/components/ui/chart';
-
+import { ChartTooltipContent, ChartContainer, type ChartConfig } from '@/components/ui/chart';
 
 type CfuChartCardProps = {
   data: CfuDataPoint[];
 };
+
+const chartConfig = {
+  value: {
+    label: 'CFU/m³',
+    color: 'hsl(var(--primary))',
+  },
+} satisfies ChartConfig;
 
 export default function CfuChartCard({ data }: CfuChartCardProps) {
   return (
@@ -24,34 +30,34 @@ export default function CfuChartCard({ data }: CfuChartCardProps) {
       </CardHeader>
       <CardContent>
         <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={data}
-              margin={{
-                top: 5,
-                right: 20,
-                left: -10,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
-              <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-              <Tooltip
-                cursor={{ fill: 'hsl(var(--muted))' }}
-                content={<ChartTooltipContent indicator="dot" />}
-              />
-              <Line
-                type="monotone"
-                dataKey="value"
-                name="CFU/m³"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-                dot={{ r: 4, fill: 'hsl(var(--primary))' }}
-                activeDot={{ r: 8, fill: 'hsl(var(--primary))' }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+            <ChartContainer config={chartConfig}>
+              <LineChart
+                data={data}
+                margin={{
+                  top: 5,
+                  right: 20,
+                  left: -10,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
+                <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                <Tooltip
+                  cursor={{ fill: 'hsl(var(--muted))' }}
+                  content={<ChartTooltipContent indicator="dot" />}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  name="CFU/m³"
+                  stroke="var(--color-value)"
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: 'var(--color-value)' }}
+                  activeDot={{ r: 8, fill: 'var(--color-value)' }}
+                />
+              </LineChart>
+            </ChartContainer>
         </div>
       </CardContent>
     </Card>
