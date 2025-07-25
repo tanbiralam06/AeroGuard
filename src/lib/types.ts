@@ -1,3 +1,4 @@
+
 export type EnvParameter = {
   current: number;
   max24h: number;
@@ -12,7 +13,7 @@ export type CfuDataPoint = {
 };
 
 export type SystemStatusData = {
-  overallHealth: 'Good' | 'Fair' | 'Poor';
+  overallHealth: 'Good' | 'Fair' | 'Poor' | 'Moderate';
   ach: number;
   uvSterilization: 'Active' | 'Inactive';
   lastContaminationEvent: string;
@@ -20,7 +21,10 @@ export type SystemStatusData = {
 
 export type BacterialLoadData = {
   current: number;
-  threshold: number;
+  threshold: {
+    moderate: number;
+    high: number;
+  };
 };
 
 export type EnvironmentalParametersData = {

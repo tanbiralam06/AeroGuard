@@ -49,8 +49,8 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
   const rand = (min: number, max: number, offset = 0) => 
     Math.floor(seededRandom(seed + offset) * (max - min + 1)) + min;
 
-  const currentCfu = rand(5, 250, 1);
-  const healthStatus = currentCfu > 150 ? 'Poor' : currentCfu > 75 ? 'Fair' : 'Good';
+  const currentCfu = rand(5, 1000, 1);
+  const healthStatus = currentCfu > 750 ? 'Poor' : currentCfu > 250 ? 'Moderate' : 'Good';
 
   const generateCfuHistory = () => {
     const data = [];
@@ -59,7 +59,7 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
       const time = new Date(now.getTime() - i * 60 * 60 * 1000); // last 12 hours
       data.push({
         time: time.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
-        value: rand(5, 250, 100 + i),
+        value: rand(5, 1000, 100 + i),
       });
     }
     // ensure last point is current value
@@ -68,16 +68,16 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
   };
   
   const cfuHistory = generateCfuHistory();
-  const cfuValues = cfuHistory.map(h => h.value);
-  const maxCfu24h = Math.max(...cfuValues, currentCfu);
-  const minCfu24h = Math.min(...cfuValues, currentCfu);
 
   return {
     hospitalId,
     roomId,
     bacterialLoad: {
       current: currentCfu,
-      threshold: 150,
+      threshold: {
+        moderate: 250,
+        high: 750,
+      },
     },
     environmentalParameters: {
       co2: { current: rand(400, 1200, 2), max24h: rand(1201, 1500, 3), min24h: rand(350, 399, 4), unit: 'ppm', name: 'CO2' },
