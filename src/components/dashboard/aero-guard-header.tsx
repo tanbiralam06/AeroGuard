@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Hospital as HospitalIcon, BedDouble, Wind } from 'lucide-react';
+import { Hospital as HospitalIcon, BedDouble } from 'lucide-react';
 import type { Hospital } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Image from 'next/image';
 
 type AeroGuardHeaderProps = {
   hospitals: Hospital[];
@@ -25,14 +26,13 @@ export default function AeroGuardHeader({
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
       <div className="flex items-center gap-2">
-        <Wind className="h-6 w-6 text-primary" />
-        <h1 className="text-xl font-bold text-foreground">AeroGuard</h1>
+        <Image src="/logo.png" alt="Biomoneta Logo" width={64} height={64} />
       </div>
-      <div className="ml-auto flex items-center gap-4">
-        <div className="flex items-center gap-2">
+      <div className="ml-auto flex flex-col md:flex-row items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-2 w-full md:w-auto">
           <HospitalIcon className="h-5 w-5 text-muted-foreground" />
           <Select value={selectedHospital} onValueChange={onHospitalChange}>
-            <SelectTrigger className="w-[200px] md:w-[250px]">
+            <SelectTrigger className="w-full md:w-[250px]">
               <SelectValue placeholder="Select Hospital" />
             </SelectTrigger>
             <SelectContent>
@@ -44,10 +44,10 @@ export default function AeroGuardHeader({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full md:w-auto">
           <BedDouble className="h-5 w-5 text-muted-foreground" />
           <Select value={selectedRoom} onValueChange={onRoomChange}>
-            <SelectTrigger className="w-[180px] md:w-[220px]">
+            <SelectTrigger className="w-full md:w-[220px]">
               <SelectValue placeholder="Select Room" />
             </SelectTrigger>
             <SelectContent>
@@ -55,7 +55,8 @@ export default function AeroGuardHeader({
                 <SelectItem key={room.id} value={room.id}>
                   {room.name}
                 </SelectItem>
-              ))}
+              ))
+              }
             </SelectContent>
           </Select>
         </div>
