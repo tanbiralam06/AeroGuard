@@ -27,13 +27,17 @@ export default function DashboardPage() {
       setRooms(hospital.rooms);
       if (!hospital.rooms.some(r => r.id === selectedRoom)) {
         setSelectedRoom(hospital.rooms[0].id);
+      } else {
+        // If the selected room is still in the new hospital, keep it.
+        // This prevents resetting to the first room when just the hospital changes.
+        setSelectedRoom(selectedRoom);
       }
     }
   }, [selectedHospital, hospitals, selectedRoom]);
 
   useEffect(() => {
     setIsLoading(true);
-    const timer = setTimeout(() => {
+    const fetchData = () => {
       try {
         const roomData = getRoomData(selectedHospital, selectedRoom);
         setData(roomData);
@@ -47,9 +51,17 @@ export default function DashboardPage() {
       } finally {
         setIsLoading(false);
       }
-    }, 500);
+    };
 
-    return () => clearTimeout(timer);
+    // Fetch data initially
+    fetchData();
+
+    // Set up interval to fetch data every 5 minutes (300000 milliseconds)
+    const intervalId = setInterval(fetchData, 60000); // Adjust the interval as needed
+
+    // Clean up interval on component unmount or when dependencies change
+    return () => clearInterval(intervalId);
+
   }, [selectedHospital, selectedRoom, toast]);
 
   return (
