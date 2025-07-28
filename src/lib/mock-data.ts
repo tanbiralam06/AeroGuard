@@ -45,17 +45,34 @@ const seededRandom = (seed: number) => {
 };
 
 export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
-  const seed = simpleHash(`${hospitalId}-${roomId}`);
+  const baseSeed = simpleHash(`${hospitalId}-${roomId}`);
+  const now = new Date();
+  const timeSeed = Math.floor(now.getTime() / (1000 * 60 * 5)); // Seed changes every 5 minutes
+  const seed = baseSeed + timeSeed;
+
   const rand = (min: number, max: number, offset = 0) => 
     Math.floor(seededRandom(seed + offset) * (max - min + 1)) + min;
 
-  let currentCfu = rand(5, 1000, 1);
-  if (roomId === 'icu_2') {
+  let currentCfu;
+
+  // Generate currentCfu based on timeSeed for dynamism
+  currentCfu = rand(5, 1000, 1); // Start with a general range
+
+  // Special case for Mercy General ICU Room 101: Bias initial value to be Good
+  if (hospitalId === 'mercy_general' && roomId === 'icu_101') {
+      // If the generated value is moderate or poor, regenerate within the good range
+      if (currentCfu > 250) {
+          currentCfu = rand(5, 249, 1);
+      }
+      // Ensure subsequent values within the interval can go up to Moderate
+      // This part relies on the 5-minute interval fetching in page.tsx
+  } else if (roomId === 'icu_2') {
     currentCfu = rand(500, 1000, 1);
     if (currentCfu < 750) {
       currentCfu = rand(750, 1000, 1);
     }
-  }
+  } // Other rooms use the initial rand(5, 1000, 1)
+
 
   const healthStatus = currentCfu > 750 ? 'Poor' : currentCfu > 250 ? 'Moderate' : 'Good';
 
@@ -69,23 +86,22 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
       const minute = time.getMinutes();
       let value = rand(5, 249, 100 + i); // Default to good range
 
-      // Moderate range conditions for ICU Room 101
+      // Moderate range conditions for ICU Room 101 history
       if (hospitalId === 'mercy_general' && roomId === 'icu_101') {
         if (
           (hour >= 7 && hour < 9) || // 7am to 9am
           (hour >= 11 && hour < 14) || // 11am to 2pm (14 is 2pm in 24h format)
           (hour >= 16 && (hour < 19 || (hour === 19 && minute <= 30))) || // 4pm to 7:30pm
           (hour >= 20 && (hour < 22 || (hour === 22 && minute <= 30))) // 8:30pm to 10:30pm
-        ) {
-          value = rand(250, 500, 100 + i);
+        ) {  value = rand(250, 500, 100 + i);
         } else if (hour >= 22 || hour < 7 ) { // After 10:30pm to before 7am, mostly good
            value = rand(5, 249, 100 + i);
         }
-        // Ensure some high values in ICU_2
+        // Ensure some high values in ICU_2 history
       } else if (roomId === 'icu_2') {
          value = rand(500, 1000, 100 + i);
       }
-       else { // Other rooms
+       else { // Other rooms history
            value = rand(5, 1000, 100 + i);
        }
 
@@ -98,7 +114,7 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
     data[data.length - 1].value = currentCfu;
     return data;
   };
-  
+
   const cfuHistory = generateCfuHistory();
 
   const co2Max24h = rand(400, 900, 3);
