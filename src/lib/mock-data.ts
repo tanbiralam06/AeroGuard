@@ -7,23 +7,23 @@ export const hospitals: Hospital[] = [
     rooms: [
       { id: 'icu_101', name: 'ICU Room 101' },
       { id: 'icu_2', name: 'ICU Room 102' },
-      { id: 'or_203', name: 'Operating Room 203' },
+      { id: 'or_203', name: 'ICU Room 103' },
     ],
   },
   {
     id: 'city_central',
     name: 'Central Hospital',
     rooms: [
-      { id: 'maternity_301', name: 'Maternity Ward 301' },
-      { id: 'cardiac_402', name: 'Cardiac Unit 402' },
+      { id: 'maternity_301', name: 'ICU Room 301' },
+      { id: 'cardiac_402', name: 'ICU Room 402' },
     ],
   },
   {
     id: 'st_judes',
     name: 'General Hospital 2',
     rooms: [
-      { id: 'pediatrics_a', name: 'Pediatrics Wing A' },
-      { id: 'pediatrics_b', name: 'Pediatrics Wing B' },
+      { id: 'pediatrics_a', name: 'ICU Room 101' },
+      { id: 'pediatrics_b', name: 'ICU Room 102' },
     ],
   },
 ];
