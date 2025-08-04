@@ -8,6 +8,7 @@ export const hospitals: Hospital[] = [
       { id: 'icu_101', name: 'ICU Room 101' },
       { id: 'icu_2', name: 'ICU Room 102' },
       { id: 'or_203', name: 'ICU Room 103' },
+      { id: 'icu_104', name: 'ICU Room 104' },
     ],
   },
   {
@@ -87,7 +88,7 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
       let value = rand(5, 249, 100 + i); // Default to good range
 
       // Moderate range conditions for ICU Room 101 history
-      if (hospitalId === 'mercy_general' && roomId === 'icu_101') {
+      if (hospitalId === 'mercy_general' && (roomId === 'icu_101' || roomId === 'or_203' || roomId === 'icu_104')) {
         if (
           (hour >= 7 && hour < 9) || // 7am to 9am
           (hour >= 11 && hour < 14) || // 11am to 2pm (14 is 2pm in 24h format)
