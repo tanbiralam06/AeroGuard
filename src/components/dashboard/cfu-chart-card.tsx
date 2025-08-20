@@ -2,13 +2,14 @@
 
 import React from 'react';
 import { Activity } from 'lucide-react';
-import { Line, Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { Line, Area, AreaChart, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import type { CfuDataPoint } from '@/lib/types';
 import { ChartTooltipContent, ChartContainer, type ChartConfig } from '@/components/ui/chart';
 
 type CfuChartCardProps = {
   data: CfuDataPoint[];
+  hospitalId: string;
 };
 
 const chartConfig = {
@@ -18,7 +19,10 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function CfuChartCard({ data }: CfuChartCardProps) {
+export default function CfuChartCard({ data, hospitalId }: CfuChartCardProps) {
+  // Determine which parent chart component to use
+  const ChartComponent = hospitalId === 'new_hospital' ? LineChart : AreaChart;
+
   return (
     <Card>
       <CardHeader>
@@ -32,7 +36,7 @@ export default function CfuChartCard({ data }: CfuChartCardProps) {
         <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ChartContainer config={chartConfig}>
-                <AreaChart
+                <ChartComponent
                   data={data}
                   margin={{
                     top: 5,
@@ -43,20 +47,32 @@ export default function CfuChartCard({ data }: CfuChartCardProps) {
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
                   <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} domain={[0, 1000]}/>
                   <Tooltip
                     cursor={{ fill: 'hsl(var(--muted))' }}
                     content={<ChartTooltipContent indicator="dot" />}
                   />
-                  <Area
-                    type="linear"
-                    dataKey="value"
-                    name="CFU/m³"
-                    stroke="var(--color-value)"
-                    fill="var(--color-value)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
+                  {/* Use a ternary operator to render the correct chart element */}
+                  {hospitalId === 'new_hospital' ? (
+                    <Line
+                      type="linear"
+                      dataKey="value"
+                      name="CFU/m³"
+                      stroke="var(--color-value)"
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  ) : (
+                    <Area
+                      type="linear"
+                      dataKey="value"
+                      name="CFU/m³"
+                      stroke="var(--color-value)"
+                      fill="var(--color-value)"
+                      strokeWidth={2}
+                    />
+                  )}
+                </ChartComponent>
               </ChartContainer>
             </ResponsiveContainer>
         </div>
