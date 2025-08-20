@@ -27,6 +27,14 @@ export const hospitals: Hospital[] = [
       { id: 'pediatrics_b', name: 'ICU Room 102' },
     ],
   },
+  {
+    id: 'new_hospital',
+    name: 'New City Hospital',
+    rooms: [
+      { id: 'room_a', name: 'Room A' },
+      { id: 'room_b', name: 'Room B' },
+    ],
+  },
 ];
 
 // Simple hash function to make random data deterministic based on input strings
@@ -72,7 +80,17 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
     if (currentCfu < 750) {
       currentCfu = rand(750, 1000, 1);
     }
-  } // Other rooms use the initial rand(5, 1000, 1)
+  } else if (hospitalId === 'new_hospital') {
+    if (roomId === 'room_a') {
+      currentCfu = rand(50, 70, 1);
+    } else if (roomId === 'room_b') {
+      currentCfu = rand(500, 750, 1);
+    } else {
+      // Default for other rooms in new_hospital if any are added later
+      currentCfu = rand(5, 1000, 1);
+    }
+  }
+  // Other rooms use the initial rand(5, 1000, 1)
 
 
   const healthStatus = currentCfu > 750 ? 'Poor' : currentCfu > 250 ? 'Moderate' : 'Good';
@@ -80,14 +98,33 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
   const generateCfuHistory = () => {
     const data = [];
     const now = new Date();
-    // Generate data for the last 24 hours at 5-minute intervals
-    for (let i = 24 * 12 - 1; i >= 0; i--) { // 24 hours * 12 intervals per hour (60/5)
-      const time = new Date(now.getTime() - i * 5 * 60 * 1000); // i * 5 minutes
+
+    let intervalMinutes = 5; // Default interval
+    let numberOfIntervals = 24 * (60 / intervalMinutes); // Default intervals for 24 hours
+
+    if (hospitalId === 'new_hospital') {
+        intervalMinutes = 30; // New hospital interval
+        numberOfIntervals = 24 * (60 / intervalMinutes); // Intervals for 24 hours at 30 mins
+    }
+
+    // Generate data for the last 24 hours at specified intervals
+    for (let i = numberOfIntervals - 1; i >= 0; i--) {
+      const time = new Date(now.getTime() - i * intervalMinutes * 60 * 1000); // i * intervalMinutes minutes
       const hour = time.getHours();
       const minute = time.getMinutes();
       let value = rand(5, 249, 100 + i); // Default to good range
 
       // Moderate range conditions for ICU Room 101 history
+      // Include new_hospital rooms with specific ranges
+      if (hospitalId === 'new_hospital') {
+        if (roomId === 'room_a') {
+            value = rand(50, 70, 50 + i);
+        } else if (roomId === 'room_b') {
+            value = rand(500, 750, 100 + i);
+        } else {
+             value = rand(5, 1000, 100 + i); // Default for other new_hospital rooms
+        }
+      } else
       if (hospitalId === 'mercy_general' && (roomId === 'icu_101' || roomId === 'or_203' || roomId === 'icu_104')) {
         if (
           (hour >= 7 && hour < 9) || // 7am to 9am
