@@ -20,8 +20,8 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function CfuChartCard({ data, hospitalId }: CfuChartCardProps) {
-  // Determine which parent chart component to use
-  const ChartComponent = hospitalId === 'new_hospital' ? LineChart : AreaChart;
+  // Use LineChart for new_hospital and facility, AreaChart for others
+  const ChartComponent = (hospitalId === 'new_hospital' || hospitalId === 'facility') ? LineChart : AreaChart;
 
   return (
     <Card>
@@ -53,7 +53,7 @@ export default function CfuChartCard({ data, hospitalId }: CfuChartCardProps) {
                     content={<ChartTooltipContent indicator="dot" />}
                   />
                   {/* Use a ternary operator to render the correct chart element */}
-                  {hospitalId === 'new_hospital' ? (
+                  {(hospitalId === 'new_hospital' || hospitalId === 'facility') ? (
                     <Line
                       type="linear"
                       dataKey="value"

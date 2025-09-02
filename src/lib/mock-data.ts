@@ -35,6 +35,14 @@ export const hospitals: Hospital[] = [
       { id: 'room_b', name: 'Room B' },
     ],
   },
+  {
+    id: 'facility',
+    name: 'Facility',
+    rooms: [
+      { id: 'room_a', name: 'Room A' },
+      { id: 'room_b', name: 'Room B' },
+    ],
+  },
 ];
 
 // Simple hash function to make random data deterministic based on input strings
@@ -89,6 +97,14 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
       // Default for other rooms in new_hospital if any are added later
       currentCfu = rand(5, 1000, 1);
     }
+  } else if (hospitalId === 'facility') {
+    if (roomId === 'room_a') {
+      currentCfu = rand(750, 900, 1);
+    } else if (roomId === 'room_b') {
+      currentCfu = rand(20, 80, 1);
+    } else {
+      currentCfu = rand(5, 1000, 1);
+    }
   }
   // Other rooms use the initial rand(5, 1000, 1)
 
@@ -102,9 +118,9 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
     let intervalMinutes = 5; // Default interval
     let numberOfIntervals = 24 * (60 / intervalMinutes); // Default intervals for 24 hours
 
-    if (hospitalId === 'new_hospital') {
-        intervalMinutes = 30; // New hospital interval
-        numberOfIntervals = 24 * (60 / intervalMinutes); // Intervals for 24 hours at 30 mins
+    if (hospitalId === 'new_hospital' || hospitalId === 'facility') {
+      intervalMinutes = 30; // Facility interval same as new_hospital
+      numberOfIntervals = 24 * (60 / intervalMinutes);
     }
 
     // Generate data for the last 24 hours at specified intervals
@@ -123,6 +139,14 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
             value = rand(500, 750, 100 + i);
         } else {
              value = rand(5, 1000, 100 + i); // Default for other new_hospital rooms
+        }
+      } else if (hospitalId === 'facility') {
+        if (roomId === 'room_a') {
+          value = rand(750, 900, 50 + i);
+        } else if (roomId === 'room_b') {
+          value = rand(20, 80, 100 + i);
+        } else {
+          value = rand(5, 1000, 100 + i);
         }
       } else
       if (hospitalId === 'mercy_general' && (roomId === 'icu_101' || roomId === 'or_203' || roomId === 'icu_104')) {
