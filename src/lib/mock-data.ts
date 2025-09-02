@@ -45,139 +45,112 @@ export const hospitals: Hospital[] = [
   },
 ];
 
-// Simple hash function to make random data deterministic based on input strings
+/** Utility functions */
 const simpleHash = (str: string) => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash |= 0; // Convert to 32bit integer
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
   }
   return Math.abs(hash);
 };
 
 const seededRandom = (seed: number) => {
-  let x = Math.sin(seed) * 10000;
+  const x = Math.sin(seed) * 10000;
   return x - Math.floor(x);
 };
 
+const randWithSeed = (seed: number) => (min: number, max: number, offset = 0) =>
+  Math.floor(seededRandom(seed + offset) * (max - min + 1)) + min;
+
+/** Room-specific overrides for current CFU */
+const getCurrentCfu = (hospitalId: string, roomId: string, rand: ReturnType<typeof randWithSeed>): number => {
+  let value = rand(5, 1000, 1);
+
+  if (hospitalId === 'mercy_general' && roomId === 'icu_101') {
+    return value > 250 ? rand(5, 249, 1) : value;
+  }
+  if (roomId === 'icu_2') {
+    return rand(750, 1000, 1);
+  }
+  if (hospitalId === 'new_hospital') {
+    return roomId === 'room_a' ? rand(50, 70, 1)
+         : roomId === 'room_b' ? rand(500, 750, 1)
+         : value;
+  }
+  if (hospitalId === 'facility') {
+    return roomId === 'room_a' ? rand(750, 900, 1)
+         : roomId === 'room_b' ? rand(20, 80, 1)
+         : value;
+  }
+  return value;
+};
+
+/** Room-specific CFU history */
+const getCfuHistory = (
+  hospitalId: string,
+  roomId: string,
+  currentCfu: number,
+  rand: ReturnType<typeof randWithSeed>
+) => {
+  const data: { time: string; value: number }[] = [];
+  const now = new Date();
+
+  let intervalMinutes = (hospitalId === 'new_hospital' || hospitalId === 'facility') ? 30 : 5;
+  const numberOfIntervals = 24 * (60 / intervalMinutes);
+
+  for (let i = numberOfIntervals - 1; i >= 0; i--) {
+    const time = new Date(now.getTime() - i * intervalMinutes * 60 * 1000);
+    const hour = time.getHours();
+    const minute = time.getMinutes();
+
+    let value = rand(5, 249, 100 + i);
+
+    if (hospitalId === 'new_hospital') {
+      value = roomId === 'room_a' ? rand(50, 70, 50 + i)
+            : roomId === 'room_b' ? rand(500, 750, 100 + i)
+            : rand(5, 1000, 100 + i);
+    } else if (hospitalId === 'facility') {
+      value = roomId === 'room_a' ? rand(750, 900, 50 + i)
+            : roomId === 'room_b' ? rand(20, 80, 100 + i)
+            : rand(5, 1000, 100 + i);
+    } else if (hospitalId === 'mercy_general' && ['icu_101', 'or_203', 'icu_104'].includes(roomId)) {
+      if (
+        (hour >= 7 && hour < 9) ||
+        (hour >= 11 && hour < 14) ||
+        (hour >= 16 && (hour < 19 || (hour === 19 && minute <= 30))) ||
+        (hour >= 20 && (hour < 22 || (hour === 22 && minute <= 30)))
+      ) {
+        value = rand(250, 500, 100 + i);
+      } else if (hour >= 22 || hour < 7) {
+        value = rand(5, 249, 100 + i);
+      }
+    } else if (roomId === 'icu_2') {
+      value = rand(500, 1000, 100 + i);
+    } else {
+      value = rand(5, 1000, 100 + i);
+    }
+
+    data.push({
+      time: time.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }),
+      value,
+    });
+  }
+
+  // last point must reflect current value
+  data[data.length - 1].value = currentCfu;
+  return data;
+};
+
+/** Main data generator */
 export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
   const baseSeed = simpleHash(`${hospitalId}-${roomId}`);
-  const now = new Date();
-  const timeSeed = Math.floor(now.getTime() / (1000 * 60 * 5)); // Seed changes every 5 minutes
-  const seed = baseSeed + timeSeed;
+  const timeSeed = Math.floor(Date.now() / (1000 * 60 * 5)); // new seed every 5 min
+  const rand = randWithSeed(baseSeed + timeSeed);
 
-  const rand = (min: number, max: number, offset = 0) => 
-    Math.floor(seededRandom(seed + offset) * (max - min + 1)) + min;
-
-  let currentCfu;
-
-  // Generate currentCfu based on timeSeed for dynamism
-  currentCfu = rand(5, 1000, 1); // Start with a general range
-
-  // Special case for Mercy General ICU Room 101: Bias initial value to be Good
-  if (hospitalId === 'mercy_general' && roomId === 'icu_101') {
-      // If the generated value is moderate or poor, regenerate within the good range
-      if (currentCfu > 250) {
-          currentCfu = rand(5, 249, 1);
-      }
-      // Ensure subsequent values within the interval can go up to Moderate
-      // This part relies on the 5-minute interval fetching in page.tsx
-  } else if (roomId === 'icu_2') {
-    currentCfu = rand(500, 1000, 1);
-    if (currentCfu < 750) {
-      currentCfu = rand(750, 1000, 1);
-    }
-  } else if (hospitalId === 'new_hospital') {
-    if (roomId === 'room_a') {
-      currentCfu = rand(50, 70, 1);
-    } else if (roomId === 'room_b') {
-      currentCfu = rand(500, 750, 1);
-    } else {
-      // Default for other rooms in new_hospital if any are added later
-      currentCfu = rand(5, 1000, 1);
-    }
-  } else if (hospitalId === 'facility') {
-    if (roomId === 'room_a') {
-      currentCfu = rand(750, 900, 1);
-    } else if (roomId === 'room_b') {
-      currentCfu = rand(20, 80, 1);
-    } else {
-      currentCfu = rand(5, 1000, 1);
-    }
-  }
-  // Other rooms use the initial rand(5, 1000, 1)
-
-
+  const currentCfu = getCurrentCfu(hospitalId, roomId, rand);
   const healthStatus = currentCfu > 750 ? 'Poor' : currentCfu > 250 ? 'Moderate' : 'Good';
-
-  const generateCfuHistory = () => {
-    const data = [];
-    const now = new Date();
-
-    let intervalMinutes = 5; // Default interval
-    let numberOfIntervals = 24 * (60 / intervalMinutes); // Default intervals for 24 hours
-
-    if (hospitalId === 'new_hospital' || hospitalId === 'facility') {
-      intervalMinutes = 30; // Facility interval same as new_hospital
-      numberOfIntervals = 24 * (60 / intervalMinutes);
-    }
-
-    // Generate data for the last 24 hours at specified intervals
-    for (let i = numberOfIntervals - 1; i >= 0; i--) {
-      const time = new Date(now.getTime() - i * intervalMinutes * 60 * 1000); // i * intervalMinutes minutes
-      const hour = time.getHours();
-      const minute = time.getMinutes();
-      let value = rand(5, 249, 100 + i); // Default to good range
-
-      // Moderate range conditions for ICU Room 101 history
-      // Include new_hospital rooms with specific ranges
-      if (hospitalId === 'new_hospital') {
-        if (roomId === 'room_a') {
-            value = rand(50, 70, 50 + i);
-        } else if (roomId === 'room_b') {
-            value = rand(500, 750, 100 + i);
-        } else {
-             value = rand(5, 1000, 100 + i); // Default for other new_hospital rooms
-        }
-      } else if (hospitalId === 'facility') {
-        if (roomId === 'room_a') {
-          value = rand(750, 900, 50 + i);
-        } else if (roomId === 'room_b') {
-          value = rand(20, 80, 100 + i);
-        } else {
-          value = rand(5, 1000, 100 + i);
-        }
-      } else
-      if (hospitalId === 'mercy_general' && (roomId === 'icu_101' || roomId === 'or_203' || roomId === 'icu_104')) {
-        if (
-          (hour >= 7 && hour < 9) || // 7am to 9am
-          (hour >= 11 && hour < 14) || // 11am to 2pm (14 is 2pm in 24h format)
-          (hour >= 16 && (hour < 19 || (hour === 19 && minute <= 30))) || // 4pm to 7:30pm
-          (hour >= 20 && (hour < 22 || (hour === 22 && minute <= 30))) // 8:30pm to 10:30pm
-        ) {  value = rand(250, 500, 100 + i);
-        } else if (hour >= 22 || hour < 7 ) { // After 10:30pm to before 7am, mostly good
-           value = rand(5, 249, 100 + i);
-        }
-        // Ensure some high values in ICU_2 history
-      } else if (roomId === 'icu_2') {
-         value = rand(500, 1000, 100 + i);
-      }
-       else { // Other rooms history
-           value = rand(5, 1000, 100 + i);
-       }
-
-      data.push({
-        time: time.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }),
-        value,
-      });
-    }
-    // ensure last point is current value
-    data[data.length - 1].value = currentCfu;
-    return data;
-  };
-
-  const cfuHistory = generateCfuHistory();
+  const cfuHistory = getCfuHistory(hospitalId, roomId, currentCfu, rand);
 
   const co2Max24h = rand(400, 900, 3);
 
@@ -186,10 +159,7 @@ export const getRoomData = (hospitalId: string, roomId: string): RoomData => {
     roomId,
     bacterialLoad: {
       current: currentCfu,
-      threshold: {
-        moderate: 250,
-        high: 750,
-      },
+      threshold: { moderate: 250, high: 750 },
     },
     environmentalParameters: {
       co2: { current: rand(400, co2Max24h, 2), max24h: co2Max24h, min24h: rand(350, 399, 4), unit: 'ppm', name: 'CO2' },
